@@ -375,6 +375,10 @@ app.get("/appointments", async (req, res) => {
     }
 });
 
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
+});
+
 // ================= SERVER =================
 const PORT = process.env.PORT || 5000;
 
