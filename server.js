@@ -1,5 +1,3 @@
-console.log("🔥 CORRECT SERVER FILE RUNNING");
-
 const express = require("express");
 const mongoose = require("mongoose");
 require("dotenv").config();
@@ -7,17 +5,16 @@ const nodemailer = require("nodemailer");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
+const path = require("path");
 
-const User = require("./models/usermodel");
-const Doctor = require("./models/doctormodel");
-const Appointment = require("./models/appointmentmodel");
+const app = express();   // ✅ FIRST create app
 
-const app = express();
+// ✅ THEN use static
+app.use(express.static(path.join(__dirname)));
 
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
-
 
 // ================= EMAIL SETUP =================
 const transporter = nodemailer.createTransport({
