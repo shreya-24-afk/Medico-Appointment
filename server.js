@@ -2,6 +2,7 @@ console.log("🔥 CORRECT SERVER FILE RUNNING");
 
 const express = require("express");
 const mongoose = require("mongoose");
+require("dotenv").config();
 const nodemailer = require("nodemailer");
 const cors = require("cors");
 const bcrypt = require("bcrypt");
@@ -40,9 +41,9 @@ const upload = multer({ storage });
 
 
 // ================= DB CONNECTION =================
-mongoose.connect("mongodb://127.0.0.1:27017/medico")
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log(err));
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("MongoDB Connected"))
+    .catch(err => console.log(err));
 
 
 // ================= SIGNUP =================
