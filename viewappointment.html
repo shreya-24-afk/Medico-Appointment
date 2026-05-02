@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Appointments</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="#" class="medico_logo">Medico Appointment</a>
+
+            <ul class="nav_items" id="navItems"></ul>
+        </nav>
+    </header>
+
+<div class="appointment">
+    <h2 class="View">View Appointments</h2>
+
+    <table class="view-table">
+        <thead>
+            <tr>
+                <th>Doctor name</th>
+                <th>Patient name</th>
+                <th>Age</th> <!-- ✅ changed -->
+                <th>Date</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+
+        <tbody id="appointmentTable">
+            <!-- Data will come from JS -->
+        </tbody>
+    </table>
+</div>
+
+<script src="script.js"></script>
+
+<script>
+async function loadAppointments() {
+    try {
+        const res = await fetch("http://localhost:5000/appointments");
+        const data = await res.json();
+
+        const table = document.getElementById("appointmentTable");
+
+        if (!table) {
+            console.error("❌ appointmentTable not found");
+            return;
+        }
+
+        table.innerHTML = "";
+
+        if (data.length === 0) {
+            table.innerHTML = `<tr><td colspan="4">No appointments found</td></tr>`;
+            return;
+        }
+
+        data.forEach(a => {
+            table.innerHTML += `
+            <tr>
+                <td>${a.doctorName ||  "N/A"}</td>
+                <td>${a.patientName || a.patientEmail || "N/A"}</td>
+                <td>${a.age || "N/A"}</td>
+                <td>${a.date || "N/A"}</td>
+                <td>${a.time || "N/A"}</td>
+            </tr>
+            `;
+        });
+
+    } catch (err) {
+        console.error("❌ Error loading appointments:", err);
+    }
+}
+
+// 🚀 Load when page opens
+document.addEventListener("DOMContentLoaded", loadAppointments);
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadNavbar();
+});
+</script>
+
+</body>
+</html>

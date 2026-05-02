@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add Doctors</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+    <nav class="nav">
+        <a href="#" class="medico_logo">Medico Appointment</a>
+        <ul class="nav_items" id="navItems"></ul>
+                
+    </nav>
+</header>
+
+<form id="doctorForm" enctype="multipart/form-data">
+    <div class="container">
+    <h2>Add Doctor</h2>
+
+    <input type="text" name="name" placeholder="Name" required><br><br>
+    <input type="email" name="email" placeholder="Email" required><br><br>
+    <input type="password" name="password" placeholder="Password" required><br><br>
+    <input type="text" name="qualification" placeholder="Qualification"><br><br>
+    <input type="text" name="speciality" placeholder="Speciality"><br><br>
+    <input type="number" name="experience" placeholder="Experience"><br><br>
+    <input type="number" name="contactNo" placeholder="Contact No"><br><br>
+    <input type="file" name="image"><br><br>
+
+   <button type="submit">Add Doctor</button>
+    </div>
+</form>
+
+
+<!-- ✅ PLACE HERE -->
+
+<script src="script.js"></script>
+
+<script>
+
+document.getElementById("doctorForm").addEventListener("submit", async function(e) {
+    e.preventDefault(); // 🔥 THIS MUST BE FIRST LINE
+
+    const formData = new FormData(this);
+
+    try {
+        const res = await fetch("http://localhost:5000/add-doctor", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+
+        alert(data.message);
+
+        console.log("Redirecting...");
+
+        // 🔥 FORCE REDIRECT (NO DELAY NEEDED)
+        window.location.href = "http://127.0.0.1:5500/doctors-card.html";
+
+    } catch (err) {
+        console.error(err);
+        alert("Error adding doctor");
+    }
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadNavbar();
+});
+</script>
+
+
+</body>
+</html>

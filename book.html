@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+        <nav class="nav">
+            <a href="#" class="medico_logo">Medico Appointment</a>
+
+            <ul class="nav_items" id="navItems"></ul>
+               
+        </nav>
+    </header>
+
+<div class="book-container">
+    <h2>Book Your Appointment</h2>
+
+    <form id="bookForm">
+        <div class="form-group">
+            <label>Full name</label>
+            <input type="text" id="patientName" name="patientName" placeholder="Enter your name" required>
+        </div>
+      
+       <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="age"  placeholder="Enter your age" required>
+        </div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" placeholder="Enter your email" required>
+        </div>
+
+        <div class="form-group">
+            <label>Phone</label>
+            <input type="tel" placeholder="Enter phone number" required>
+        </div>
+
+        <div class="form-group">
+           <select id="doctorSelect" required>
+                <option value="">-- Choose Doctor --</option>
+                <option value="david@gmail.com">Dr. David Classic</option>
+                <option value="sam@gmail.com">Dr. Sam Bravo</option>
+                <option value="karry@gmail.com">Dr. Karry Michel</option>
+           </select>
+        </div>
+
+        <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="date"  required>
+        </div>
+
+        <div class="form-group">
+            <label>Time</label>
+            <input type="time" id="time" required>
+        </div>
+
+        <button class="bookbtn" type="submit">Book Appointment</button>
+    </form>
+</div>
+<script src="script.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded",async function () {
+    
+    await loadDoctorDropdown();
+
+      // 🔥 ADD THIS HERE
+    const selectedDoctor = localStorage.getItem("doctorEmail");
+
+    if (selectedDoctor) {
+        const select = document.getElementById("doctorSelect");
+        if (select) {
+            select.value = selectedDoctor;
+        }
+    }
+
+    const bookForm = document.getElementById("bookForm");
+
+    if (!bookForm) return;
+
+    bookForm.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (!user) {
+            alert("Please login first");
+            window.location.href = "login.html";
+            return;
+        }
+        
+        const patientName = document.getElementById("patientName").value;
+        console.log("Sending name:", patientName);
+
+        const doctorEmail = document.getElementById("doctorSelect").value;
+        const date = document.getElementById("date").value;
+        const time = document.getElementById("time").value;
+        const age = document.getElementById("age").value; 
+
+        // 🔴 IMPORTANT CHECK
+        if (!doctorEmail) {
+            alert("Please select a doctor");
+            return;
+        }
+
+        console.log("Selected doctor:", doctorEmail);
+
+        const res = await fetch("http://localhost:5000/book", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                patientName,
+                patientEmail: user.email,
+                doctorEmail,
+                age,
+                date,
+                time
+            })
+        });
+
+        const data = await res.json();
+        alert(data);
+
+        window.location.href = "patient.html";
+    });
+
+});
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadNavbar();
+});
+</script>
+
+</body>
+</html>

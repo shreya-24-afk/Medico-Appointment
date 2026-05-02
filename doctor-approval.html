@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Doctor Dashboard</title>
+<link rel="stylesheet" href="style.css">
+
+<style>
+/* 🔥 FORCE BUTTON VISIBILITY */
+.approve-btn, .reject-btn {
+    display: inline-block !important;
+    padding: 6px 10px;
+    margin: 5px 2px;
+    border: none;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.approve-btn {
+    background-color: green;
+    color: white;
+}
+
+.reject-btn {
+    background-color: red;
+    color: white;
+}
+
+/* optional */
+td {
+    text-align: center;
+}
+</style>
+
+</head>
+
+<body>
+
+<header class="header">
+    <nav class="nav">
+        <a href="#" class="medico_logo">Medico Appointment</a>
+
+       <ul class="nav_items" id="navItems"></ul>
+            
+    </nav>
+</header>
+
+<div class="approve-container">
+    <h2>Patient Appointment Requests</h2>
+
+    <table border="1" width="100%">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Email</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Status / Action</th>
+            </tr>
+        </thead>
+
+        <tbody id="appointmentTable">
+        </tbody>
+    </table>
+</div>
+
+<script src="script.js"></script>
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+
+// 🔐 protect page
+if (!user || user.role !== "doctor") {
+    window.location.href = "login.html";
+}
+
+// 🔄 load appointments
+async function loadAppointments() {
+    try {
+        const res = await fetch(`http://localhost:5000/doctor-appointments/${user.email}`);
+        const data = await res.json();
+
+        console.log("Appointments:", data); // 🔥 DEBUG
+
+        const table = document.getElementById("appointmentTable");
+        table.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            table.innerHTML = `<tr><td colspan="6">No Requests Available</td></tr>`;
+            return;
+        }
+
+        data.forEach(a => {
+            table.innerHTML += `
+            <tr>
+                <td>${a.patientName}</td>
+                <td>${a.age}</td>
+                <td>${a.patientEmail}</td>
+                <td>${a.date}</td>
+                <td>${a.time}</td>
+                <td>
+                    <b>${a.status}</b><br>
+                    <button class="approve-btn" onclick="approve('${a._id}', '${a.patientEmail}')">Approve</button>
+                    <button class="reject-btn" onclick="reject('${a._id}', '${a.patientEmail}')">Reject</button>
+                </td>
+            </tr>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Error:", err);
+    }
+}
+
+// ✅ approve
+async function approve(id, email) {
+    const res = await fetch("http://localhost:5000/approve-appointment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, patientEmail: email })
+    });
+
+    alert(await res.json());
+    loadAppointments();
+}
+
+// ❌ reject
+async function reject(id, email) {
+    const res = await fetch("http://localhost:5000/reject-appointment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, patientEmail: email })
+    });
+
+    alert(await res.json());
+    loadAppointments();
+}
+
+// 🚀 start
+document.addEventListener("DOMContentLoaded", () => {
+    loadNavbar();
+    loadAppointments();
+});
+</script>
+
+</body>
+</html>

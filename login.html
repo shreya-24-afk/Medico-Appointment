@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body class="main">
+   <header class="login-header">
+    <nav class="nav">
+        <a href="#" class="medico_logo">Medico Appointment</a>
+
+        <ul class="nav_items">
+            <li class="nav_item">
+                <a href="index.html" class="nav_link">Home</a>
+                <a href="about.html" class="nav_link">About</a>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+
+<div class="login-container">
+
+    <!-- USER LOGIN -->
+    <div class="form-box active" id="user">
+        <h2>Login</h2>
+
+        <input type="email" id="userEmail" placeholder="Email" class="input">
+        <input type="password" id="userPassword" placeholder="Password" class="input">
+
+        <p><a href="#" onclick="showForm('forgot')">Forgot password?</a></p>
+        <p>Doctor's Login? <a href="#" onclick="showForm('doctor')">Click here</a></p>
+
+        <button class="btn" onclick="userLogin()">Login</button>
+        <button class="btn" onclick="showForm('signup')">Sign Up</button>
+    </div>
+
+
+    <!-- DOCTOR LOGIN -->
+    <div class="form-box" id="doctor">
+        <h2>Doctor Login</h2>
+
+        <input type="email" id="doctorEmail" placeholder="Email" class="input">
+        <input type="password" id="doctorPassword" placeholder="Password" class="input">
+
+        <p><a href="#" onclick="showForm('forgot')">Forgot password?</a></p>
+        <p>User Login? <a href="#" onclick="showForm('user')">Click here</a></p>
+
+        <button class="btn1" onclick="doctorLogin()">Login</button>
+    </div>
+
+
+
+    <!-- ADMIN LOGIN -->
+    <div class="form-box" id="admin">
+        <h2>Admin Login</h2>
+
+        <input type="email" id="adminEmail" placeholder="Email" class="input">
+        <input type="password" id="adminPassword" placeholder="Password" class="input">
+
+        <p>User Login? <a href="#" onclick="showForm('user')">Click here</a></p>
+
+        <button class="btn" onclick="adminLogin()">Login</button>
+    </div>
+
+
+    <!-- USER SIGNUP -->
+    <div class="form-box" id="signup">
+        <h2>Sign Up</h2>
+
+        <input type="text" id="signupName" placeholder="Name" class="input">
+        <input type="email" id="signupEmail" placeholder="Email" class="input">
+        <input type="password" id="signupPassword" placeholder="Password" class="input">
+
+        <p>Already have account? <a href="#" onclick="showForm('user')">Login</a></p>
+
+        <button class="btn" onclick="showForm('user')">Login</button>
+        <button class="btn" onclick="signup()">Sign Up</button>
+    </div>
+
+
+    <!-- FORGOT PASSWORD -->
+    <div class="form-box" id="forgot">
+        <h2>Forgot Password</h2>
+
+        <input type="email" id="forgotEmail" placeholder="Enter Email" class="input">
+
+        <p><a href="#" onclick="showForm('reset')">Send Reset Link</a></p>
+
+        <button class="btn">Submit</button>
+    </div>
+
+
+    <!-- RESET PASSWORD -->
+    <div class="form-box" id="reset">
+        <h2>Reset Password</h2>
+
+        <input type="password" id="newPassword" placeholder="New Password" class="input">
+        <input type="password" id="confirmPassword" placeholder="Confirm Password" class="input">
+
+        <p><a href="#" onclick="showForm('user')">Back to Login</a></p>
+
+        <button class="btn" onclick="resetPassword()">Reset</button>
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    loadNavbar();
+});
+</script>
+
+</body>
+</html>

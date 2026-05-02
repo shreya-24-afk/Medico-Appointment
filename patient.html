@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Patient Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<header class="header">
+        <nav class="nav">
+            <a href="#" class="medico_logo">Medico Appointment</a>
+
+            <ul class="nav_items" id="navItems"></ul>
+                
+        </nav>
+    </header>
+
+<body>
+
+<div class="patient-container">
+
+  <h1>Patient Dashboard</h1>
+
+  <h2>Welcome, <span id="username"></span></h2>
+
+  <a href="book.html">
+    <button class="patient">Book Appointment</button>
+  </a>
+
+  <h3>My Appointments</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Doctor</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+
+    <tbody id="myAppointments"></tbody>
+  </table>
+
+  <button class="logout-btn" onclick="logout()">Logout</button>
+
+</div>
+
+<script src="script.js"></script>
+
+<script>
+const user = JSON.parse(localStorage.getItem("user"));
+
+if (!user) {
+    window.location.href = "login.html";
+}
+
+async function loadPatientAppointments() {
+    const res = await fetch(`http://localhost:5000/patient-appointments/${user.email}`);
+    const data = await res.json();
+
+    const table = document.getElementById("myAppointments");
+    table.innerHTML = "";
+
+    if (data.length === 0) {
+        table.innerHTML = `<tr><td colspan="4">No Appointments</td></tr>`;
+        return;
+    }
+
+    data.forEach(a => {
+        table.innerHTML += `
+        <tr>
+            <td>${a.doctorName}</td>
+            <td>${a.date}</td>
+            <td>${a.time}</td>
+            <td>${a.status}</td>
+        </tr>
+        `;
+    });
+}
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadNavbar();
+    loadPatientAppointments(); 
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin Dashboard</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="header">
+        <nav class="nav">
+            <a href="#" class="medico_logo">Medico Appointment</a>
+
+            <ul class="nav_items" id="navItems"></ul>
+
+        </nav>
+    </header>
+
+<div class="dashboard">
+
+    <h2>Admin Dashboard</h2>
+
+    <!-- CARDS -->
+    <div class="admin-cards">
+
+        <div class="admin-card">
+            <h4>Total Patients</h4>
+            <h2 id="patients">0</h2>
+            <p class="green">Live data</p>
+        </div>
+
+        <div class="admin-card">
+            <h4>Total Doctors</h4>
+            <h2 id="doctors">0</h2>
+            <p class="green">Live data</p>
+        </div>
+
+        <div class="admin-card">
+            <h4>Total Appointments</h4>
+            <h2 id="appointments">0</h2>
+            <p class="green">Live data</p>
+        </div>
+
+        <div class="admin-card">
+            <h4>Today's Appointments</h4>
+            <h2 id="today">0</h2>
+            <p class="green">Live data</p>
+        </div>
+
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="admin-main">
+
+        <!-- TABLE -->
+        <div class="table-section">
+            <h3>Recent Appointments</h3>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Patient Name</th>
+                        <th>Doctor Name</th>
+                        <th>Department</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody id="appointmentTable">
+                    <!-- Data from backend -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- QUICK ACTIONS -->
+        <div class="actions">
+    <h3>Quick Actions</h3>
+
+    <a href="addDoctor.html" class="action-btn">Add New Doctor</a>
+    <a href="doctors-card.html" class="action-btn">Remove Doctor</a>
+    <a href="viewappointment.html" class="action-btn">View All Appointments</a>
+</div>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+<script>
+// async function loadDoctors() {
+//     const res = await fetch("http://localhost:5000/doctors");
+//     const doctors = await res.json();
+
+//     const container = document.getElementById("doctorList");
+//     if (!container) return;
+
+//     container.innerHTML = "";
+
+//     const isAdmin = localStorage.getItem("admin") === "admin@gmail.com";
+
+//     doctors.forEach(doc => {
+//         container.innerHTML += `
+//         <div class="box">
+//             <img src="http://localhost:5000/uploads/${doc.image}" alt="">
+//             <div class="content">
+//                 <h2>${doc.name}</h2>
+//                 <p>${doc.speciality || doc.specialization}</p>
+
+//                 <button onclick="handleBookDoctor('${doc.email}')">Book</button>
+
+//                 ${isAdmin ? `<button onclick="removeDoctor('${doc.email}')">Remove</button>` : ""}
+//             </div>
+//         </div>
+//         `;
+//     });
+// }
+
+
+
+
+/* ================= ADMIN PROTECTION ================= */
+const user = JSON.parse(localStorage.getItem("user"));
+
+if (!user || user.role !== "admin") {
+    alert("Access denied");
+    window.location.href = "login.html";
+}
+
+
+/* ================= LOAD DASHBOARD ================= */
+async function loadDashboard() {
+    try {
+        // 🔹 FETCH STATS
+        const statsRes = await fetch("http://localhost:5000/admin-stats");
+        const stats = await statsRes.json();
+
+        // 🔹 UPDATE CARDS
+        document.getElementById("patients").innerText = stats.totalPatients || 0;
+        document.getElementById("doctors").innerText = stats.totalDoctors || 0;
+        document.getElementById("appointments").innerText = stats.totalAppointments || 0;
+        document.getElementById("today").innerText = stats.todayAppointments || 0;
+
+
+        // 🔹 FETCH RECENT APPOINTMENTS
+        const res = await fetch("http://localhost:5000/recent-appointments");
+        const data = await res.json();
+
+        const table = document.getElementById("appointmentTable");
+
+        if (!table) {
+            console.error("Table not found");
+            return;
+        }
+
+        table.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            table.innerHTML = `
+                <tr>
+                    <td colspan="6">No appointments found</td>
+                </tr>
+            `;
+            return;
+        }
+
+        // 🔹 POPULATE TABLE
+        data.forEach(a => {
+            table.innerHTML += `
+                <tr>
+                    <td>${a.patientName || a.patientEmail || "N/A"}</td>
+                    <td>${a.doctorName || "N/A"}</td>
+                    <td>${a.speciality || "General"}</td>
+                    <td>${a.date || "N/A"}</td>
+                    <td>${a.time || "N/A"}</td>
+                    <td>${a.status || "pending"}</td>
+                </tr>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Dashboard error:", err);
+    }
+}
+
+
+/* ================= AUTO LOAD ================= */
+document.addEventListener("DOMContentLoaded", loadDashboard);
+
+
+
+
+/* ================= OPTIONAL AUTO REFRESH ================= */
+// Uncomment if you want live updates every 5 seconds
+// setInterval(loadDashboard, 5000);
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadNavbar();
+});
+
+</script>
+
+</body>
+</html>

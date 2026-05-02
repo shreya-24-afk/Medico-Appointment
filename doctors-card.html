@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Doctors</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header class="header">
+    <nav class="nav">
+        <a href="#" class="medico_logo">Medico Appointment</a>
+
+        <ul class="nav_items" id="navItems"></ul>
+            
+    </nav>
+</header>
+
+<section id="doc" class="card">
+<div class="card-container">
+    <h3 class="title">Our Doctors</h3>
+
+    <!-- 🔥 Dynamic container ONLY -->
+    <div class="box-container" id="doctorList"></div>
+
+</div>
+</section>
+
+<script src="script.js"></script>
+<script>
+async function loadDoctors() {
+    try {
+        const res = await fetch("http://localhost:5000/doctors");
+        const doctors = await res.json();
+
+        const container = document.getElementById("doctorList");
+        if (!container) return;
+
+        container.innerHTML = "";
+
+
+        if (doctors.length === 0) {
+            container.innerHTML = "<p>No doctors available</p>";
+            return;
+        }
+
+        const user = JSON.parse(localStorage.getItem("user"));
+        const isAdmin = user && user.role === "admin";
+
+
+        doctors.forEach(doc => {
+        container.innerHTML += `
+        <div class="box">
+            <img src="http://localhost:5000/uploads/${doc.image}" 
+                 onerror="this.src='https://via.placeholder.com/300x200?text=Doctor'">
+
+            <div class="content">
+                <h2>Dr. ${doc.name}</h2>
+                <p>${doc.speciality || doc.specialization}</p>
+
+               ${!isAdmin ? `<button onclick="handleBookDoctor('${doc.email}')">Book</button>` : ""}
+
+              ${isAdmin ? `<button onclick="removeDoctor('${doc.email}')">Remove</button>` : ""}
+            </div>
+        </div>
+    `;
+});
+    } catch (err) {
+        console.error("Error loading doctors:", err);
+    }
+}
+
+//remove doc
+async function removeDoctor(email) {
+    const confirmDelete = confirm("Are you sure?");
+    if (!confirmDelete) return;
+
+    const user = JSON.parse(localStorage.getItem("user")); // ✅ MOVE HERE
+
+    try {
+        const res = await fetch("http://localhost:5000/remove-doctor", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email,
+                user
+            })
+        });
+
+        const text = await res.text();
+        alert(text);
+        loadDoctors();
+
+    } catch (err) {
+        console.error("Delete error:", err);
+    }
+}
+
+// 📅 BOOK DOCTOR
+function handleBookDoctor(email) {
+    localStorage.setItem("doctorEmail", email);
+    window.location.href = "book.html";
+}
+
+// 🚀 LOAD PAGE
+document.addEventListener("DOMContentLoaded", loadDoctors);
+
+document.addEventListener("DOMContentLoaded", () => {
+    loadNavbar();
+});
+
+
+</script>
+
+</body>
+</html>
