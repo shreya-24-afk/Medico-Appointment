@@ -7,6 +7,11 @@ const bcrypt = require("bcrypt");
 const multer = require("multer");
 const path = require("path");
 
+// ✅ IMPORT MODELS (VERY IMPORTANT)
+ const User = require("./models/usermodel"); 
+ const Doctor = require("./models/doctormodel"); 
+ const Appointment = require("./models/appointmentmodel");
+
 const app = express();   // ✅ FIRST create app
 
 // ✅ THEN use static
@@ -18,12 +23,12 @@ app.use("/uploads", express.static("uploads"));
 
 // ================= EMAIL SETUP =================
 const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: "shreyast024@gmail.com",      // 🔥 PUT YOUR EMAIL
-        pass: "tbtvyiyzrprbctna"          // 🔥 PUT APP PASSWORD (no spaces)
-    }
-});
+         service: "gmail", 
+         auth: { 
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS
+         } 
+        });
 
 
 // ================= MULTER =================
@@ -36,12 +41,15 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-
+console.log("MONGO URI:", process.env.MONGO_URI);
 // ================= DB CONNECTION =================
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("MongoDB Connected"))
-    .catch(err => console.log(err));
-
+.then(() => {
+  console.log("DB connected ✅");
+})
+.catch(err => {
+  console.log("DB error ❌", err);
+});
 
 // ================= SIGNUP =================
 app.post("/signup", async (req, res) => {
