@@ -23,7 +23,7 @@
             <tr>
                 <th>Doctor name</th>
                 <th>Patient name</th>
-                <th>Age</th> <!-- ✅ changed -->
+                <th>Age</th> 
                 <th>Date</th>
                 <th>Time</th>
             </tr>
@@ -46,7 +46,7 @@ async function loadAppointments() {
         const table = document.getElementById("appointmentTable");
 
         if (!table) {
-            console.error("❌ appointmentTable not found");
+            console.error("appointmentTable not found");
             return;
         }
 
@@ -74,7 +74,7 @@ async function loadAppointments() {
     }
 }
 
-// 🚀 Load when page opens
+// Load when page opens
 document.addEventListener("DOMContentLoaded", loadAppointments);
 
 

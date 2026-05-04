@@ -66,23 +66,21 @@
 </div>
 <script src="script.js"></script>
 
+
 <script>
-document.addEventListener("DOMContentLoaded",async function () {
-    
+document.addEventListener("DOMContentLoaded", async function () {
+
+    loadNavbar();
     await loadDoctorDropdown();
 
-      // 🔥 ADD THIS HERE
+    // Auto select doctor
     const selectedDoctor = localStorage.getItem("doctorEmail");
-
     if (selectedDoctor) {
         const select = document.getElementById("doctorSelect");
-        if (select) {
-            select.value = selectedDoctor;
-        }
+        if (select) select.value = selectedDoctor;
     }
 
     const bookForm = document.getElementById("bookForm");
-
     if (!bookForm) return;
 
     bookForm.addEventListener("submit", async function (e) {
@@ -94,43 +92,49 @@ document.addEventListener("DOMContentLoaded",async function () {
             window.location.href = "login.html";
             return;
         }
-        
-        const patientName = document.getElementById("patientName").value;
-        console.log("Sending name:", patientName);
 
+        const patientName = document.getElementById("patientName").value;
         const doctorEmail = document.getElementById("doctorSelect").value;
         const date = document.getElementById("date").value;
         const time = document.getElementById("time").value;
-        const age = document.getElementById("age").value; 
+        const age = document.getElementById("age").value;
 
-        // 🔴 IMPORTANT CHECK
         if (!doctorEmail) {
             alert("Please select a doctor");
             return;
         }
 
-        console.log("Selected doctor:", doctorEmail);
+        try {
+            const res = await fetch(BASE_URL + "/book", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    patientName,
+                    patientEmail: user.email,
+                    doctorEmail,
+                    age,
+                    date,
+                    time
+                })
+            });
 
-        const res = await fetch("http://localhost:5000/book", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                patientName,
-                patientEmail: user.email,
-                doctorEmail,
-                age,
-                date,
-                time
-            })
-        });
+            const data = await res.json();
+            console.log(data);
 
-        const data = await res.json();
-        alert(data);
+            if (res.ok) {
+                alert("Appointment booked successfully");
+                window.location.href = "patient.html";
+            } else {
+                alert(data.message || "Booking failed");
+            }
 
-        window.location.href = "patient.html";
+        } catch (err) {
+            console.error(err);
+            alert("Server error");
+        }
     });
-
 });
+
 
 
 document.addEventListener("DOMContentLoaded", () => {

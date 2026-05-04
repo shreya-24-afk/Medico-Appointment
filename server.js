@@ -7,14 +7,14 @@ const bcrypt = require("bcrypt");
 const multer = require("multer");
 const path = require("path");
 
-// ✅ IMPORT MODELS (VERY IMPORTANT)
+//  IMPORT MODELS (VERY IMPORTANT)
  const User = require("./models/usermodel"); 
  const Doctor = require("./models/doctormodel"); 
  const Appointment = require("./models/appointmentmodel");
 
-const app = express();   // ✅ FIRST create app
+const app = express();   
 
-// ✅ THEN use static
+// static
 app.use(express.static(path.join(__dirname)));
 
 app.use(cors());
@@ -45,10 +45,10 @@ console.log("MONGO URI:", process.env.MONGO_URI);
 // ================= DB CONNECTION =================
 mongoose.connect(process.env.MONGO_URI)
 .then(() => {
-  console.log("DB connected ✅");
+  console.log("DB connected");
 })
 .catch(err => {
-  console.log("DB error ❌", err);
+  console.log("DB error", err);
 });
 
 // ================= SIGNUP =================
@@ -162,7 +162,7 @@ app.post("/remove-doctor", async (req, res) => {
     try {
         const { email, user } = req.body;
 
-        // 🔐 Admin check
+        //  Admin check
         if (!user || user.role !== "admin") {
             return res.status(403).json("Unauthorized");
         }
@@ -256,18 +256,26 @@ app.post("/approve-appointment", async (req, res) => {
             { new: true }
         );
 
-        await transporter.sendMail({
+        if (!appointment) {
+            return res.json({ message: "Appointment not found" });
+        }
+
+        
+        transporter.sendMail({
+            from: process.env.EMAIL_USER,
             to: appointment.patientEmail,
             subject: "Appointment Approved",
-            text: `Hello ${appointment.patientName},
-Your appointment on ${appointment.date} at ${appointment.time} has been APPROVED.`
+            text: `Hello ${appointment.patientName}, your appointment is approved`
+        }).catch(err => {
+            console.log("Email error:", err.message);
         });
 
-        res.json("Approved & Email Sent");
+        
+        res.json({ message: "Appointment Approved and email sent" });
 
     } catch (err) {
-        console.log(err);
-        res.json("Error approving");
+        console.log("Approve error:", err);
+        res.json({ message: "Approved (email failed)" }); // still success
     }
 });
 
@@ -283,18 +291,24 @@ app.post("/reject-appointment", async (req, res) => {
             { new: true }
         );
 
-        await transporter.sendMail({
+        if (!appointment) {
+            return res.json({ message: "Appointment not found" });
+        }
+
+        transporter.sendMail({
+            from: process.env.EMAIL_USER,
             to: appointment.patientEmail,
             subject: "Appointment Rejected",
-            text: `Hello ${appointment.patientName},
-Your appointment on ${appointment.date} at ${appointment.time} has been REJECTED.`
+            text: `Hello ${appointment.patientName}, your appointment is rejected`
+        }).catch(err => {
+            console.log("Email error:", err.message);
         });
 
-        res.json("Rejected & Email Sent");
+        res.json({ message: "Appointment Rejected and email sent" });
 
     } catch (err) {
-        console.log(err);
-        res.json("Error rejecting");
+        console.log("Reject error:", err);
+        res.json({ message: "Rejected (email failed)" });
     }
 });
 
@@ -321,7 +335,7 @@ app.get("/patient-appointments/:email", async (req, res) => {
 
 // ================= ADMIN STATS =================
 app.get("/admin-stats", async (req, res) => {
-    console.log("🔥 ADMIN STATS HIT");
+    console.log("ADMIN STATS HIT");
 
     try {
         const totalDoctors = await Doctor.countDocuments();
@@ -351,7 +365,7 @@ app.get("/admin-stats", async (req, res) => {
 
 // ================= RECENT APPOINTMENTS =================
 app.get("/recent-appointments", async (req, res) => {
-    console.log("🔥 RECENT APPOINTMENTS HIT");
+    console.log("RECENT APPOINTMENTS HIT");
 
     try {
         const data = await Appointment.find()
@@ -368,7 +382,7 @@ app.get("/recent-appointments", async (req, res) => {
 
 // ================= view ALL APPOINTMENTS =================
 app.get("/appointments", async (req, res) => {
-    console.log("🔥 ALL APPOINTMENTS HIT");
+    console.log("ALL APPOINTMENTS HIT");
 
     try {
         const data = await Appointment.find();

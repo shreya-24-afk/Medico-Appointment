@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const AppointmentSchema = new mongoose.Schema({
     patientEmail: String,
     doctorEmail: String,
-    doctorName: String,   // ✅ ADD THIS
+    doctorName: String,   
     speciality: String,
     patientName: String,
     age: Number,

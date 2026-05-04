@@ -132,28 +132,20 @@ if (!user || user.role !== "admin") {
 /* ================= LOAD DASHBOARD ================= */
 async function loadDashboard() {
     try {
-        // 🔹 FETCH STATS
-        const statsRes = await fetch("http://localhost:5000/admin-stats");
+        // FETCH STATS
+        const statsRes = await fetch(BASE_URL + "/admin-stats");
         const stats = await statsRes.json();
 
-        // 🔹 UPDATE CARDS
         document.getElementById("patients").innerText = stats.totalPatients || 0;
         document.getElementById("doctors").innerText = stats.totalDoctors || 0;
         document.getElementById("appointments").innerText = stats.totalAppointments || 0;
         document.getElementById("today").innerText = stats.todayAppointments || 0;
 
-
-        // 🔹 FETCH RECENT APPOINTMENTS
-        const res = await fetch("http://localhost:5000/recent-appointments");
+        //  FETCH RECENT APPOINTMENTS
+        const res = await fetch(BASE_URL + "/recent-appointments");
         const data = await res.json();
 
         const table = document.getElementById("appointmentTable");
-
-        if (!table) {
-            console.error("Table not found");
-            return;
-        }
-
         table.innerHTML = "";
 
         if (!data || data.length === 0) {
@@ -165,7 +157,6 @@ async function loadDashboard() {
             return;
         }
 
-        // 🔹 POPULATE TABLE
         data.forEach(a => {
             table.innerHTML += `
                 <tr>
@@ -183,7 +174,6 @@ async function loadDashboard() {
         console.error("Dashboard error:", err);
     }
 }
-
 
 /* ================= AUTO LOAD ================= */
 document.addEventListener("DOMContentLoaded", loadDashboard);

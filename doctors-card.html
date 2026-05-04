@@ -22,24 +22,26 @@
 <div class="card-container">
     <h3 class="title">Our Doctors</h3>
 
-    <!-- 🔥 Dynamic container ONLY -->
+    <!--  Dynamic container ONLY -->
     <div class="box-container" id="doctorList"></div>
 
 </div>
 </section>
 
 <script src="script.js"></script>
+
 <script>
 async function loadDoctors() {
     try {
-        const res = await fetch("http://localhost:5000/doctors");
+        const res = await fetch(BASE_URL + "/doctors");
         const doctors = await res.json();
+
+        console.log(doctors); 
 
         const container = document.getElementById("doctorList");
         if (!container) return;
 
         container.innerHTML = "";
-
 
         if (doctors.length === 0) {
             container.innerHTML = "<p>No doctors available</p>";
@@ -49,24 +51,24 @@ async function loadDoctors() {
         const user = JSON.parse(localStorage.getItem("user"));
         const isAdmin = user && user.role === "admin";
 
-
         doctors.forEach(doc => {
-        container.innerHTML += `
-        <div class="box">
-            <img src="http://localhost:5000/uploads/${doc.image}" 
-                 onerror="this.src='https://via.placeholder.com/300x200?text=Doctor'">
+            container.innerHTML += `
+                <div class="box">
+                    <img src="${BASE_URL}/uploads/${doc.image}" 
+                         onerror="this.src='https://via.placeholder.com/300x200?text=Doctor'">
 
-            <div class="content">
-                <h2>Dr. ${doc.name}</h2>
-                <p>${doc.speciality || doc.specialization}</p>
+                    <div class="content">
+                        <h2>Dr. ${doc.name}</h2>
+                        <p>${doc.speciality || doc.specialization}</p>
 
-               ${!isAdmin ? `<button onclick="handleBookDoctor('${doc.email}')">Book</button>` : ""}
+                        ${!isAdmin ? `<button onclick="handleBookDoctor('${doc.email}')">Book</button>` : ""}
 
-              ${isAdmin ? `<button onclick="removeDoctor('${doc.email}')">Remove</button>` : ""}
-            </div>
-        </div>
-    `;
-});
+                        ${isAdmin ? `<button onclick="removeDoctor('${doc.email}')">Remove</button>` : ""}
+                    </div>
+                </div>
+            `;
+        });
+
     } catch (err) {
         console.error("Error loading doctors:", err);
     }
@@ -77,10 +79,10 @@ async function removeDoctor(email) {
     const confirmDelete = confirm("Are you sure?");
     if (!confirmDelete) return;
 
-    const user = JSON.parse(localStorage.getItem("user")); // ✅ MOVE HERE
+    const user = JSON.parse(localStorage.getItem("user"));
 
     try {
-        const res = await fetch("http://localhost:5000/remove-doctor", {
+        const res = await fetch(BASE_URL + "/remove-doctor", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -100,19 +102,17 @@ async function removeDoctor(email) {
     }
 }
 
-// 📅 BOOK DOCTOR
+//  BOOK DOCTOR
 function handleBookDoctor(email) {
     localStorage.setItem("doctorEmail", email);
     window.location.href = "book.html";
 }
 
-// 🚀 LOAD PAGE
-document.addEventListener("DOMContentLoaded", loadDoctors);
-
+//  LOAD PAGE
 document.addEventListener("DOMContentLoaded", () => {
+    loadDoctors();
     loadNavbar();
 });
-
 
 </script>
 

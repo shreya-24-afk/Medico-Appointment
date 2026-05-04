@@ -56,29 +56,38 @@ if (!user) {
 }
 
 async function loadPatientAppointments() {
-    const res = await fetch(`http://localhost:5000/patient-appointments/${user.email}`);
-    const data = await res.json();
+    try {
+        const res = await fetch(`${BASE_URL}/patient-appointments/${user.email}`);
+        const data = await res.json();
 
-    const table = document.getElementById("myAppointments");
-    table.innerHTML = "";
+        console.log(data); 
 
-    if (data.length === 0) {
-        table.innerHTML = `<tr><td colspan="4">No Appointments</td></tr>`;
-        return;
+        const table = document.getElementById("myAppointments");
+        table.innerHTML = "";
+
+        if (!data || data.length === 0) {
+            table.innerHTML = `<tr><td colspan="4">No Appointments</td></tr>`;
+            return;
+        }
+
+        data.forEach(a => {
+            table.innerHTML += `
+                <tr>
+                    <td>${a.doctorName || a.doctorEmail}</td>
+                    <td>${a.date}</td>
+                    <td>${a.time}</td>
+                    <td>${a.status || "Pending"}</td>
+                </tr>
+            `;
+        });
+
+    } catch (err) {
+        console.error("Error loading appointments:", err);
+
+        document.getElementById("myAppointments").innerHTML =
+            `<tr><td colspan="4">Error loading data</td></tr>`;
     }
-
-    data.forEach(a => {
-        table.innerHTML += `
-        <tr>
-            <td>${a.doctorName}</td>
-            <td>${a.date}</td>
-            <td>${a.time}</td>
-            <td>${a.status}</td>
-        </tr>
-        `;
-    });
 }
-
 
 document.addEventListener("DOMContentLoaded", () => {
     loadNavbar();

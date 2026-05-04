@@ -6,9 +6,8 @@
 <link rel="stylesheet" href="style.css">
 
 <style>
-/* 🔥 FORCE BUTTON VISIBILITY */
 .approve-btn, .reject-btn {
-    display: inline-block !important;
+    display: inline-block;
     padding: 6px 10px;
     margin: 5px 2px;
     border: none;
@@ -26,12 +25,10 @@
     color: white;
 }
 
-/* optional */
 td {
     text-align: center;
 }
 </style>
-
 </head>
 
 <body>
@@ -39,9 +36,7 @@ td {
 <header class="header">
     <nav class="nav">
         <a href="#" class="medico_logo">Medico Appointment</a>
-
-       <ul class="nav_items" id="navItems"></ul>
-            
+        <ul class="nav_items" id="navItems"></ul>
     </nav>
 </header>
 
@@ -60,27 +55,27 @@ td {
             </tr>
         </thead>
 
-        <tbody id="appointmentTable">
-        </tbody>
+        <tbody id="appointmentTable"></tbody>
     </table>
 </div>
 
 <script src="script.js"></script>
+
 <script>
 const user = JSON.parse(localStorage.getItem("user"));
 
-// 🔐 protect page
+
 if (!user || user.role !== "doctor") {
     window.location.href = "login.html";
 }
 
-// 🔄 load appointments
+// load appointments
 async function loadAppointments() {
     try {
-        const res = await fetch(`http://localhost:5000/doctor-appointments/${user.email}`);
+        const res = await fetch(`${BASE_URL}/doctor-appointments/${user.email}`);
         const data = await res.json();
 
-        console.log("Appointments:", data); // 🔥 DEBUG
+        console.log("Appointments:", data);
 
         const table = document.getElementById("appointmentTable");
         table.innerHTML = "";
@@ -91,6 +86,10 @@ async function loadAppointments() {
         }
 
         data.forEach(a => {
+            const statusColor =
+                a.status === "approved" ? "green" :
+                a.status === "rejected" ? "red" : "black";
+
             table.innerHTML += `
             <tr>
                 <td>${a.patientName}</td>
@@ -99,9 +98,14 @@ async function loadAppointments() {
                 <td>${a.date}</td>
                 <td>${a.time}</td>
                 <td>
-                    <b>${a.status}</b><br>
-                    <button class="approve-btn" onclick="approve('${a._id}', '${a.patientEmail}')">Approve</button>
-                    <button class="reject-btn" onclick="reject('${a._id}', '${a.patientEmail}')">Reject</button>
+                    <b style="color:${statusColor}">
+                        ${a.status || "Pending"}
+                    </b><br>
+
+                    ${a.status === "pending" || !a.status ? `
+                        <button class="approve-btn" onclick="approve('${a._id}')">Approve</button>
+                        <button class="reject-btn" onclick="reject('${a._id}')">Reject</button>
+                    ` : ""}
                 </td>
             </tr>
             `;
@@ -112,31 +116,57 @@ async function loadAppointments() {
     }
 }
 
-// ✅ approve
-async function approve(id, email) {
-    const res = await fetch("http://localhost:5000/approve-appointment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, patientEmail: email })
-    });
+// APPROVE
+async function approve(id) {
+    try {
+        const res = await fetch(BASE_URL + "/approve-appointment", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ id })
+        });
 
-    alert(await res.json());
-    loadAppointments();
+        const data = await res.json();
+        if (res.ok) {
+    alert(data.message);
+} else {
+    alert("Something went wrong");
+}
+        loadAppointments(); 
+
+    } catch (err) {
+        console.error(err);
+        alert("Error approving");
+    }
 }
 
-// ❌ reject
-async function reject(id, email) {
-    const res = await fetch("http://localhost:5000/reject-appointment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, patientEmail: email })
-    });
+//  REJECT
+async function reject(id) {
+    try {
+        const res = await fetch(BASE_URL + "/reject-appointment", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ id })
+        });
 
-    alert(await res.json());
-    loadAppointments();
+        const data = await res.json();
+       if (res.ok) {
+    alert(data.message);
+} else {
+    alert("Something went wrong");
 }
 
-// 🚀 start
+        loadAppointments(); 
+
+    } catch (err) {
+        console.error(err);
+        alert("Error rejecting");
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
     loadNavbar();
     loadAppointments();

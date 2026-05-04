@@ -34,44 +34,39 @@
 </form>
 
 
-<!-- ✅ PLACE HERE -->
 
 <script src="script.js"></script>
 
 <script>
-
 document.getElementById("doctorForm").addEventListener("submit", async function(e) {
-    e.preventDefault(); // 🔥 THIS MUST BE FIRST LINE
+    e.preventDefault();
 
     const formData = new FormData(this);
 
     try {
-        const res = await fetch("http://localhost:5000/add-doctor", {
+        const res = await fetch(BASE_URL + "/add-doctor", {
             method: "POST",
             body: formData
         });
 
         const data = await res.json();
+        console.log(data);
 
-        alert(data.message);
+        if (res.ok) {
+            alert("Doctor added successfully");
 
-        console.log("Redirecting...");
-
-        // 🔥 FORCE REDIRECT (NO DELAY NEEDED)
-        window.location.href = "http://127.0.0.1:5500/doctors-card.html";
+           
+            document.getElementById("doctorForm").reset();
+        } else {
+            alert(data.message || "Error adding doctor");
+        }
 
     } catch (err) {
         console.error(err);
-        alert("Error adding doctor");
+        alert("Server error");
     }
 });
-
-
-document.addEventListener("DOMContentLoaded", () => {
-    loadNavbar();
-});
 </script>
-
 
 </body>
 </html>
