@@ -38,9 +38,11 @@
 <script src="script.js"></script>
 
 <script>
+const BASE_URL = window.location.origin;
+
 async function loadAppointments() {
     try {
-        const res = await fetch("http://localhost:5000/appointments");
+        const res = await fetch(`${BASE_URL}/appointments`);
         const data = await res.json();
 
         const table = document.getElementById("appointmentTable");
@@ -52,15 +54,15 @@ async function loadAppointments() {
 
         table.innerHTML = "";
 
-        if (data.length === 0) {
-            table.innerHTML = `<tr><td colspan="4">No appointments found</td></tr>`;
+        if (!data || data.length === 0) {
+            table.innerHTML = `<tr><td colspan="5">No appointments found</td></tr>`;
             return;
         }
 
         data.forEach(a => {
             table.innerHTML += `
             <tr>
-                <td>${a.doctorName ||  "N/A"}</td>
+                <td>${a.doctorName || "N/A"}</td>
                 <td>${a.patientName || a.patientEmail || "N/A"}</td>
                 <td>${a.age || "N/A"}</td>
                 <td>${a.date || "N/A"}</td>
@@ -70,15 +72,12 @@ async function loadAppointments() {
         });
 
     } catch (err) {
-        console.error("❌ Error loading appointments:", err);
+        console.error(" Error loading appointments:", err);
     }
 }
 
-// Load when page opens
-document.addEventListener("DOMContentLoaded", loadAppointments);
-
-
 document.addEventListener("DOMContentLoaded", () => {
+    loadAppointments();
     loadNavbar();
 });
 </script>
