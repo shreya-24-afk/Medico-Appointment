@@ -60,9 +60,10 @@ async function loadAppointments() {
         }
 
         data.forEach(a => {
+            console.log(a);
             table.innerHTML += `
             <tr>
-                <td>${a.doctorName || "N/A"}</td>
+                <td>${a.doctorName || a.doctorEmail || "N/A"}</td>
                 <td>${a.patientName || a.patientEmail || "N/A"}</td>
                 <td>${a.age || "N/A"}</td>
                 <td>${a.date || "N/A"}</td>
