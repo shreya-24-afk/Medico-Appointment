@@ -16,17 +16,12 @@ const app = express();
 
 // ================= CORS =================
 app.use(cors({
-  origin: [
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-    "https://shreya-24-afk.github.io/Medico-Appointment/"
-  ],
-  credentials: true
+  origin: "*"
 }));
 
 // ================= MIDDLEWARE =================
+app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ================= EMAIL =================
@@ -321,6 +316,9 @@ app.get("/appointments", async (req, res) => {
   res.json(data);
 });
 
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+});
 
 // ================= SERVER =================
 const PORT = process.env.PORT || 5000;

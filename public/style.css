@@ -41,16 +41,19 @@ body {
 .nav {
     max-width: 1400px;
     width: 100%;
-    margin: 0 auto;              /* center */
+    margin: 0 auto;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.nav_item {
+
+.nav_items {
     display: flex;
-    gap: 40px;                  /* space between menu */
+    gap: 40px;
+    list-style: none;
 }
+
 
 
 .medico_logo {
@@ -59,21 +62,16 @@ body {
     margin-left: -30px;
 }
 
-.nav_item {
-    column-gap: 50px;
-    margin-left: 0;
-    justify-content: flex-end;
-}
-.nav_link {
+.nav_items li a {
     color: white;
     text-decoration: none;
     padding: 6px 16px;
     font-size: 20px;
-    /* display: inline-block; */
     border-radius: 4px;
     transition: background-color 0.3s ease, transform 0.2s ease;
 }
-.nav_link:hover { 
+
+.nav_items li a:hover {
     background-color: darkred;
     transform: scale(1.15);
 }

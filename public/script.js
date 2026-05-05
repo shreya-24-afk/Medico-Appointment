@@ -3,9 +3,7 @@ const BASE_URL =
   window.location.hostname === "localhost" ||
   window.location.hostname === "127.0.0.1"
     ? "http://localhost:5000"
-    : "https://medico-appointment.onrender.com";
-
-
+    : "";
 
 // ================= FORM SWITCH =================
 function showForm(formId) {
@@ -43,44 +41,36 @@ function loadNavbar() {
 
     if (!user) {
         nav.innerHTML = `
-            <li class="nav_item">
-                <a href="index.html" class="nav_link">Home</a>
-                <a href="about.html" class="nav_link">About</a>
-                <a href="login.html" class="nav_link">Login</a>
-            </li>
+            <li><a href="/index.html">Home</a></li>
+            <li><a href="/about.html">About</a></li>
+            <li><a href="/login.html">Login</a></li>
         `;
         return;
     }
 
     if (user.role === "user") {
         nav.innerHTML = `
-            <li class="nav_item">
-                <a href="index.html">Home</a>
-                <a href="about.html">About</a>
-                <a href="doctors-card.html">Doctors</a>
-                <a href="patient.html">Dashboard</a>
-                <a href="#" onclick="logout()">Logout</a>
-            </li>
+            <li><a href="/index.html">Home</a></li>
+            <li><a href="/about.html">About</a></li>
+            <li><a href="/doctors-card.html">Doctors</a></li>
+            <li><a href="/patient.html">Dashboard</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
         `;
     } 
     else if (user.role === "doctor") {
         nav.innerHTML = `
-            <li class="nav_item">
-                <a href="index.html">Home</a>
-                <a href="doctor-approval.html">Dashboard</a>
-                <a href="#" onclick="logout()">Logout</a>
-            </li>
+            <li><a href="/index.html">Home</a></li>
+            <li><a href="/doctor-approval.html">Dashboard</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
         `;
     } 
     else if (user.role === "admin") {
         nav.innerHTML = `
-            <li class="nav_item">
-                <a href="index.html">Home</a>
-                <a href="about.html">About</a>
-                <a href="doctors-card.html">Doctors</a>
-                <a href="admin.html">Dashboard</a>
-                <a href="#" onclick="logout()">Logout</a>
-            </li>
+            <li><a href="/index.html">Home</a></li>
+            <li><a href="/about.html">About</a></li>
+            <li><a href="/doctors-card.html">Doctors</a></li>
+            <li><a href="/admin.html">Dashboard</a></li>
+            <li><a href="#" onclick="logout()">Logout</a></li>
         `;
     }
 }
