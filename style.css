@@ -107,7 +107,7 @@ body {
     padding:5px 10px;
     background:white;
     margin-top: 280px;
-    margin-left: 310px;
+    margin-left: 235px;
     margin-bottom: 20px;
 }
 
@@ -216,8 +216,9 @@ p {
     align-items: center;
     justify-content: space-between;
     gap: 20px;
+    
 
-    padding: 60px 80px;
+    padding: 20px 40px;
     background: #f0f8ff;
 
     margin: 150px 40px;   /* space from sides like your reference */
@@ -234,9 +235,10 @@ p {
 /* LEFT IMAGE */
 .source {
     max-width: 100%;
-    width: 800px;      /* bigger like reference */
+    width: 800px;      
     height: auto;
     flex-shrink: 0;
+    margin-left: -50px;
 }
 
 /* RIGHT SIDE CONTENT */
@@ -246,53 +248,53 @@ p {
 
 /* HOW IT WORKS TEXT */
 .howit {
-    color: #2f6dfc;        /* blue color */
+    color: #2f6dfc;        
     font-size: 18px;
     font-weight: 600;
-    text-align: center;    /* center */
+    text-align: center;    
     margin-bottom: 10px;
     font-weight: 500;
+    margin-left: -70px;
+
 }
 
 /* MAIN HEADING */
 .works {
-    font-size: 36px;
+    font-size: 28px;
     font-weight: 700;
     margin-bottom: 30px;
-    text-align: center;    /* center */
+    text-align: center;    
+    margin-left: -70px;
+    padding: 20px;
+    
 }
 
 /* STEPS GRID */
 .anothercls {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    /* gap: 60px 100px; */
-    column-gap: 90px;
-    row-gap: 70px;
+   display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px 60px;
+    margin-top: 30px;
+    margin-left: -100px;
 }
 
 /* EACH STEP */
 .anothercls > div {
     display: flex;
-    gap: 35px;
     align-items: flex-start;
+    gap: 15px
 }
 
 /* ICON */
 .anothercls i {
-    font-size: 40px;
-    padding: 12px;
-    background: #eef3ff;
-    border-radius: 8px;
-    margin-top: -4px;
+     font-size: 30px;
+    background: #eef6ff;
     color: #2f6dfc;
-    min-width: 35px;
+    padding: 12px;
+    border-radius: 10px;
+    min-width: 50px;
     text-align: center;
-}
-
-.anothercls i {
-    width: 100px;
-    height: 50x;
+    margin-top: -10px;
     transition: transform 0.2s linear;
 }
 
@@ -307,9 +309,15 @@ p {
 
 /* HEADINGS */
 .anothercls h5 {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 8px;
+    font-size: 18px;
+    margin-bottom: 5px;
+}
+
+.anothercls p {
+   font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    text-align: left;
 }
 
 /* ===== Latest Articles ===== */
@@ -747,7 +755,7 @@ p a {
 .remove-btn {
     margin-top: 10px;
     padding: 10px 12px;
-    background-color: #e74c3c; /* red */
+    background-color: #e74c3c; 
     color: white;
     border: none;
     border-radius: 5px;
@@ -763,12 +771,12 @@ p a {
     background-color: #c0392b;
 }
 
-/* Optional: align button center */
+
 .content {
     text-align: center;
 }
 
-/* Make sure card spacing looks good */
+
 .box {
     position: relative;
     padding-bottom: 15px;
@@ -1084,7 +1092,7 @@ th, td {
 
 .patient-container {
   max-width: 900px;
-  margin: 40px auto;   /* THIS centers it */
+  margin: 40px auto;   
   background: rgb(233, 216, 216);
   padding: 50px;
   border-radius: 10px;
@@ -1211,7 +1219,7 @@ th {
     background: black;
 }
 
-/* ACTIONS */
+
 /* QUICK ACTION BOX */
 .actions {
     flex: 1;

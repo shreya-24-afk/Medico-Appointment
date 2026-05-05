@@ -1,22 +1,10 @@
-// const BASE_URL = window.location.hostname === "localhost"
-// ? "http://localhost:5000"
-// : "https://medico-appointment.onrender.com";
-
-
-// ================= FORM SWITCH =================
-// function showForm(formId) {
-//     document.querySelectorAll(".form-box").forEach(form => {
-//         form.classList.remove("active");
-//     });
-//     document.getElementById(formId).classList.add("active");
-// }
-
-/// ================= BASE URL =================
+// ================= BASE URL =================
 const BASE_URL =
-    window.location.origin.includes("localhost") ||
-    window.location.origin.includes("127.0.0.1")
-        ? "http://localhost:5000"
-        : "https://medico-appointment.onrender.com";
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://localhost:5000"
+    : "https://YOUR-BACKEND.onrender.com"; 
+
 
 // ================= FORM SWITCH =================
 function showForm(formId) {
@@ -26,6 +14,22 @@ function showForm(formId) {
     }
     var target = document.getElementById(formId);
     if (target) target.classList.add("active");
+}
+
+
+// ================= FORGOT PASSWORD =================
+function goToReset() {
+    const email = document.getElementById("forgotEmail").value;
+
+    if (!email) {
+        alert("Please enter email");
+        return;
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    localStorage.setItem("resetEmail", cleanEmail);
+
+    showForm("reset");
 }
 
 
@@ -50,31 +54,31 @@ function loadNavbar() {
     if (user.role === "user") {
         nav.innerHTML = `
             <li class="nav_item">
-                <a href="index.html" class="nav_link">Home</a>
-                <a href="about.html" class="nav_link">About</a>
-                <a href="doctors-card.html" class="nav_link">Doctors</a>
-                <a href="patient.html" class="nav_link">Patient Dashboard</a>
-                <a href="#" onclick="logout()" class="nav_link">Logout</a>
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="doctors-card.html">Doctors</a>
+                <a href="patient.html">Dashboard</a>
+                <a href="#" onclick="logout()">Logout</a>
             </li>
         `;
     } 
     else if (user.role === "doctor") {
         nav.innerHTML = `
             <li class="nav_item">
-                <a href="index.html" class="nav_link">Home</a>
-                <a href="doctor-approval.html" class="nav_link">Doctor Dashboard</a>
-                <a href="#" onclick="logout()" class="nav_link">Logout</a>
+                <a href="index.html">Home</a>
+                <a href="doctor-approval.html">Dashboard</a>
+                <a href="#" onclick="logout()">Logout</a>
             </li>
         `;
     } 
     else if (user.role === "admin") {
         nav.innerHTML = `
             <li class="nav_item">
-                <a href="index.html" class="nav_link">Home</a>
-                <a href="about.html" class="nav_link">About</a>
-                <a href="doctors-card.html" class="nav_link">Doctors</a>
-                <a href="admin.html" class="nav_link">Admin Dashboard</a>
-                <a href="#" onclick="logout()" class="nav_link">Logout</a>
+                <a href="index.html">Home</a>
+                <a href="about.html">About</a>
+                <a href="doctors-card.html">Doctors</a>
+                <a href="admin.html">Dashboard</a>
+                <a href="#" onclick="logout()">Logout</a>
             </li>
         `;
     }
@@ -91,7 +95,7 @@ function logout() {
 // ================= SIGNUP =================
 async function signup() {
     var name = document.getElementById("signupName").value;
-    var email = document.getElementById("signupEmail").value;
+    var email = document.getElementById("signupEmail").value.trim().toLowerCase();
     var password = document.getElementById("signupPassword").value;
 
     try {
@@ -113,7 +117,7 @@ async function signup() {
 
 // ================= USER LOGIN =================
 async function userLogin() {
-    var email = document.getElementById("userEmail").value;
+    var email = document.getElementById("userEmail").value.trim().toLowerCase();
     var password = document.getElementById("userPassword").value;
 
     try {
@@ -124,19 +128,75 @@ async function userLogin() {
         });
 
         var data = await res.json();
-        alert(data.message);
 
-        if (data.message && data.message.includes("Successful")) {
+        if (data.success) {
             localStorage.setItem("user", JSON.stringify({
-                email: data.email || email,
-                role: data.role
+                email: data.email,
+                role: data.role,
+                name: data.name
             }));
 
             if (data.role === "admin") {
                 window.location.href = "admin.html";
-            } else {
+            } 
+            else if (data.role === "doctor") {
+                window.location.href = "doctor-approval.html";
+            } 
+            else {
                 window.location.href = "doctors-card.html";
             }
+
+        } else {
+            alert(data.message);
+        }
+
+    } catch (err) {
+        alert("Server error");
+    }
+}
+
+
+// ================= RESET PASSWORD =================
+async function resetPassword() {
+    const password = document.getElementById("newPassword").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+
+    if (!password || !confirmPassword) {
+        alert("Please fill all fields");
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        alert("Passwords do not match");
+        return;
+    }
+
+    const email = localStorage.getItem("resetEmail");
+
+    if (!email) {
+        alert("Email not found. Please try again.");
+        return;
+    }
+
+    try {
+        const res = await fetch(BASE_URL + "/reset-password", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+            alert("Password updated successfully");
+
+            localStorage.removeItem("resetEmail");
+            showForm("user");
+
+        } else {
+            alert(data.message);
         }
 
     } catch (err) {
@@ -156,13 +216,13 @@ async function loadDoctorDropdown() {
 
         select.innerHTML = `<option value="">-- Choose Doctor --</option>`;
 
-        for (var i = 0; i < doctors.length; i++) {
+        doctors.forEach(doc => {
             select.innerHTML += `
-                <option value="${doctors[i].email}">
-                    ${doctors[i].name}
+                <option value="${doc.email}">
+                    ${doc.name}
                 </option>
             `;
-        }
+        });
 
     } catch (err) {
         console.log("Error loading doctors");

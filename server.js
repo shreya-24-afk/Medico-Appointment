@@ -7,29 +7,36 @@ const bcrypt = require("bcrypt");
 const multer = require("multer");
 const path = require("path");
 
-//  IMPORT MODELS (VERY IMPORTANT)
- const User = require("./models/usermodel"); 
- const Doctor = require("./models/doctormodel"); 
- const Appointment = require("./models/appointmentmodel");
+// MODELS
+const User = require("./models/usermodel"); 
+const Doctor = require("./models/doctormodel"); 
+const Appointment = require("./models/appointmentmodel");
 
-const app = express();   
+const app = express();
 
-// static
-app.use(express.static(path.join(__dirname)));
+// ================= CORS =================
+app.use(cors({
+  origin: [
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "https://YOUR-FRONTEND.github.io"
+  ],
+  credentials: true
+}));
 
-app.use(cors());
+// ================= MIDDLEWARE =================
 app.use(express.json());
-app.use("/uploads", express.static("uploads"));
+app.use(express.static(path.join(__dirname)));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ================= EMAIL SETUP =================
+// ================= EMAIL =================
 const transporter = nodemailer.createTransport({
-         service: "gmail", 
-         auth: { 
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-         } 
-        });
-
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 
 // ================= MULTER =================
 const storage = multer.diskStorage({
@@ -38,94 +45,111 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + "-" + file.originalname);
   }
 });
-
 const upload = multer({ storage });
 
-console.log("MONGO URI:", process.env.MONGO_URI);
-// ================= DB CONNECTION =================
+// ================= DB =================
 mongoose.connect(process.env.MONGO_URI)
-.then(() => {
-  console.log("DB connected");
-})
-.catch(err => {
-  console.log("DB error", err);
-});
+.then(() => console.log("DB connected"))
+.catch(err => console.log("DB error", err));
+
 
 // ================= SIGNUP =================
 app.post("/signup", async (req, res) => {
-    const { name, email, password } = req.body;
+  let { name, email, password } = req.body;
 
-    try {
-        const existingUser = await User.findOne({ email });
-        if (existingUser) return res.json("User already exists");
+  try {
+    email = email.trim().toLowerCase();
 
-        const hashedPassword = await bcrypt.hash(password, 10);
-
-        const user = new User({
-            name,
-            email,
-            password: hashedPassword
-        });
-
-        await user.save();
-        res.json("Signup Successful");
-
-    } catch (err) {
-        res.json("Error");
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.json({ success: false, message: "User already exists" });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = new User({ name, email, password: hashedPassword });
+    await user.save();
+
+    res.json({ success: true, message: "Signup Successful" });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Error" });
+  }
 });
 
 
 // ================= LOGIN =================
 app.post("/login", async (req, res) => {
-    const { email, password } = req.body;
+  let { email, password } = req.body;
 
-    try {
-        if (email === "admin@gmail.com" && password === "admin123") {
-            return res.json({ role: "admin", message: "Admin Login Successful" });
-        }
+  try {
+    email = email.trim().toLowerCase();
 
-        const user = await User.findOne({ email });
-        if (!user) return res.json({ role: "user", message: "User not found" });
-
-        const isMatch = await bcrypt.compare(password, user.password);
-
-        if (isMatch) {
-            res.json({ role: "user", message: "Login Successful" });
-        } else {
-            res.json({ role: "user", message: "Invalid Credentials" });
-        }
-
-    } catch (err) {
-        res.json({ message: "Error" });
+    if (email === "admin@gmail.com" && password === "admin123") {
+      return res.json({
+        success: true,
+        role: "admin",
+        email,
+        message: "Admin Login Successful"
+      });
     }
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.json({ success: false, message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) {
+      return res.json({ success: false, message: "Invalid Credentials" });
+    }
+
+    res.json({
+      success: true,
+      role: "user",
+      email: user.email,
+      name: user.name,
+      message: "Login Successful"
+    });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 });
 
 
 // ================= RESET =================
-app.post("/reset", async (req, res) => {
-    const { email, newPassword } = req.body;
+app.post("/reset-password", async (req, res) => {
+  try {
+    let { email, password } = req.body;
 
-    try {
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
+    email = email.trim().toLowerCase();
 
-        await User.updateOne(
-            { email },
-            { password: hashedPassword }
-        );
+    const user = await User.findOne({ email });
 
-        res.json("Password Reset Successful");
-
-    } catch (err) {
-        res.json("Error");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
     }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+
+    await user.save();
+
+    res.json({ success: true, message: "Password updated successfully" });
+
+  } catch (err) {
+    res.status(500).json({ success: false, message: "Server error" });
+  }
 });
 
 
 // ================= DOCTORS =================
 app.get("/doctors", async (req, res) => {
-    const doctors = await Doctor.find();
-    res.json(doctors);
+  const doctors = await Doctor.find();
+  res.json(doctors);
 });
 
 
@@ -150,257 +174,157 @@ app.post("/add-doctor", upload.single("image"), async (req, res) => {
     res.json({ message: "Doctor saved in database" });
 
   } catch (err) {
-    console.log(err);
     res.status(500).json({ message: "Error saving doctor" });
   }
 });
 
-//remove doc
+
+// ================= REMOVE DOCTOR =================
 app.post("/remove-doctor", async (req, res) => {
-     console.log("REMOVE ROUTE HIT");
-     
-    try {
-        const { email, user } = req.body;
+  try {
+    const { email, user } = req.body;
 
-        //  Admin check
-        if (!user || user.role !== "admin") {
-            return res.status(403).json("Unauthorized");
-        }
-
-        await Doctor.deleteOne({ email });
-
-        res.json("Doctor removed successfully");
-
-    } catch (err) {
-        console.log(err);
-        res.status(500).json("Error removing doctor");
+    if (!user || user.role !== "admin") {
+      return res.status(403).json("Unauthorized");
     }
+
+    await Doctor.deleteOne({ email });
+
+    res.json("Doctor removed successfully");
+
+  } catch (err) {
+    res.status(500).json("Error removing doctor");
+  }
 });
 
 
-// ================= BOOK APPOINTMENT =================
+// ================= BOOK =================
 app.post("/book", async (req, res) => {
-    try {
-        const { patientName, patientEmail, doctorEmail, date, time, age } = req.body;
+  try {
+    const { patientName, patientEmail, doctorEmail, date, time, age } = req.body;
 
-        const doctor = await Doctor.findOne({ email: doctorEmail });
+    const doctor = await Doctor.findOne({ email: doctorEmail });
 
-        const appointment = new Appointment({
-            patientName,
-            patientEmail,
-            doctorEmail,
-            doctorName: doctor ? doctor.name : "Unknown Doctor",
-            speciality: doctor ? doctor.speciality : "General",
-            age,
-            date,
-            time,
-            status: "pending"
-        });
+    const appointment = new Appointment({
+      patientName,
+      patientEmail,
+      doctorEmail,
+      doctorName: doctor ? doctor.name : "Unknown",
+      speciality: doctor ? doctor.speciality : "General",
+      age,
+      date,
+      time,
+      status: "pending"
+    });
 
-        await appointment.save();
+    await appointment.save();
 
-        res.json("Appointment Booked Successfully");
+    res.json("Appointment Booked Successfully");
 
-    } catch (err) {
-        console.log(err);
-        res.json("Error booking appointment");
-    }
+  } catch (err) {
+    res.json("Error booking appointment");
+  }
 });
 
 
 // ================= DOCTOR LOGIN =================
 app.post("/doctor-login", async (req, res) => {
-    try {
-        const { email, password } = req.body;
+  const doctor = await Doctor.findOne(req.body);
+  if (!doctor) return res.json({ message: "Invalid credentials" });
 
-        const doctor = await Doctor.findOne({ email, password });
-
-        if (!doctor) {
-            return res.json({ message: "Invalid credentials" });
-        }
-
-        res.json({
-            message: "Login Successful",
-            role: "doctor",
-            email: doctor.email,
-            name: doctor.name
-        });
-
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "Server error" });
-    }
+  res.json({
+    message: "Login Successful",
+    role: "doctor",
+    email: doctor.email,
+    name: doctor.name
+  });
 });
 
 
 // ================= DOCTOR APPOINTMENTS =================
 app.get("/doctor-appointments/:email", async (req, res) => {
-    try {
-        const doctorEmail = req.params.email;
-        const data = await Appointment.find({ doctorEmail });
-        res.json(data);
-    } catch (err) {
-        res.status(500).json({ message: "Error fetching appointments" });
-    }
+  const data = await Appointment.find({ doctorEmail: req.params.email });
+  res.json(data);
 });
 
 
 // ================= APPROVE =================
 app.post("/approve-appointment", async (req, res) => {
-    try {
-        const { id } = req.body;
+  const appointment = await Appointment.findByIdAndUpdate(
+    req.body.id,
+    { status: "approved" },
+    { new: true }
+  );
 
-        const appointment = await Appointment.findByIdAndUpdate(
-            id,
-            { status: "approved" },
-            { new: true }
-        );
+  transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: appointment.patientEmail,
+    subject: "Appointment Approved",
+    text: `Hello ${appointment.patientName}, your appointment is approved`
+  }).catch(() => {});
 
-        if (!appointment) {
-            return res.json({ message: "Appointment not found" });
-        }
-
-        
-        transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: appointment.patientEmail,
-            subject: "Appointment Approved",
-            text: `Hello ${appointment.patientName}, your appointment is approved`
-        }).catch(err => {
-            console.log("Email error:", err.message);
-        });
-
-        
-        res.json({ message: "Appointment Approved and email sent" });
-
-    } catch (err) {
-        console.log("Approve error:", err);
-        res.json({ message: "Approved (email failed)" }); // still success
-    }
+  res.json({ message: "Appointment Approved" });
 });
 
 
 // ================= REJECT =================
 app.post("/reject-appointment", async (req, res) => {
-    try {
-        const { id } = req.body;
+  const appointment = await Appointment.findByIdAndUpdate(
+    req.body.id,
+    { status: "rejected" },
+    { new: true }
+  );
 
-        const appointment = await Appointment.findByIdAndUpdate(
-            id,
-            { status: "rejected" },
-            { new: true }
-        );
+  transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: appointment.patientEmail,
+    subject: "Appointment Rejected",
+    text: `Hello ${appointment.patientName}, your appointment is rejected`
+  }).catch(() => {});
 
-        if (!appointment) {
-            return res.json({ message: "Appointment not found" });
-        }
-
-        transporter.sendMail({
-            from: process.env.EMAIL_USER,
-            to: appointment.patientEmail,
-            subject: "Appointment Rejected",
-            text: `Hello ${appointment.patientName}, your appointment is rejected`
-        }).catch(err => {
-            console.log("Email error:", err.message);
-        });
-
-        res.json({ message: "Appointment Rejected and email sent" });
-
-    } catch (err) {
-        console.log("Reject error:", err);
-        res.json({ message: "Rejected (email failed)" });
-    }
+  res.json({ message: "Appointment Rejected" });
 });
 
-//patient dashboard//
-// ================= PATIENT APPOINTMENTS =================
+
+// ================= PATIENT =================
 app.get("/patient-appointments/:email", async (req, res) => {
-    try {
-        const patientEmail = req.params.email;
-
-        console.log("Patient dashboard for:", patientEmail); // debug
-
-        const data = await Appointment.find({ patientEmail });
-
-        console.log("Patient appointments:", data); // debug
-
-        res.json(data);
-
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: "Error fetching patient appointments" });
-    }
+  const data = await Appointment.find({ patientEmail: req.params.email });
+  res.json(data);
 });
 
 
-// ================= ADMIN STATS =================
+// ================= ADMIN =================
 app.get("/admin-stats", async (req, res) => {
-    console.log("ADMIN STATS HIT");
+  const totalDoctors = await Doctor.countDocuments();
+  const totalAppointments = await Appointment.countDocuments();
+  const uniquePatients = await Appointment.distinct("patientEmail");
 
-    try {
-        const totalDoctors = await Doctor.countDocuments();
-        const totalAppointments = await Appointment.countDocuments();
+  const today = new Date().toISOString().split("T")[0];
 
-        const uniquePatients = await Appointment.distinct("patientEmail");
+  const todayAppointments = await Appointment.countDocuments({ date: today });
 
-        const today = new Date().toISOString().split("T")[0];
-
-        const todayAppointments = await Appointment.countDocuments({
-            date: today
-        });
-
-        res.json({
-            totalDoctors,
-            totalAppointments,
-            totalPatients: uniquePatients.length,
-            todayAppointments
-        });
-
-    } catch (err) {
-        console.log(err);
-        res.status(500).json("Error loading stats");
-    }
+  res.json({
+    totalDoctors,
+    totalAppointments,
+    totalPatients: uniquePatients.length,
+    todayAppointments
+  });
 });
 
-
-// ================= RECENT APPOINTMENTS =================
 app.get("/recent-appointments", async (req, res) => {
-    console.log("RECENT APPOINTMENTS HIT");
-
-    try {
-        const data = await Appointment.find()
-            .sort({ _id: -1 })
-            .limit(5);
-
-        res.json(data);
-
-    } catch (err) {
-        console.log(err);
-        res.status(500).json("Error fetching appointments");
-    }
+  const data = await Appointment.find().sort({ _id: -1 }).limit(5);
+  res.json(data);
 });
 
-// ================= view ALL APPOINTMENTS =================
 app.get("/appointments", async (req, res) => {
-    console.log("ALL APPOINTMENTS HIT");
-
-    try {
-        const data = await Appointment.find();
-        res.json(data);
-
-    } catch (err) {
-        console.log(err);
-        res.status(500).json("Error fetching appointments");
-    }
+  const data = await Appointment.find();
+  res.json(data);
 });
 
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
-});
 
 // ================= SERVER =================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log("Server running");
+  console.log("Server running on port " + PORT);
 });
